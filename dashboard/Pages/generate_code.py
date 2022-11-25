@@ -68,7 +68,7 @@ def make_layout():
 						),
 						html.Div(id='code-generated-gc', style={'display': 'none'}),
 						html.Div(id='code-generated2-gc', style={'display': 'none'}),
-					], width=2)
+					], width=4)
 				], id='graph-container', style={'margin-bottom':'30rem'})
 			]),
 		),
@@ -190,7 +190,7 @@ def register_callbacks(app):
 		
 		data += "\n"
 		data += backtest_code
-		path_dir = "dashboard/MySrategies/"
+		path_dir = "dashboard/MyStrategies/"
 		filename_save = filename+".py"
 		
 		with open (os.path.join(path_dir, filename_save), 'w') as fp:

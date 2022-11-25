@@ -3,7 +3,6 @@ warnings.filterwarnings('ignore')
 import os
 import tempfile
 import zipfile
-import uuid
 
 # Customized Bullet chart
 import datetime as dt
@@ -38,408 +37,87 @@ import yahoo_fin.stock_info as si
 #Graphing/Visualization
 import plotly.graph_objs as go
 
-from re import S
-import re
-# from turtle import onclick
-import redis
-import flask
-
-import dashboard.backend as ob
-import dashboard.configuration as oc
-
-PRIMARY = '#FFFFFF' 
-SECONDARY = '#FFFFFF'
-ACCENT = '#98C1D9'
-DARK_ACCENT = '#474747'
-SIDEBAR = '#F7F7F7'
-
 # global yf_data
 # yf_data = pd.DataFrame()
 df_dict = {}
 
-debug_mode = False  # set False to deploy
-
-root_directory = os.getcwd()
-stylesheets = ['tabs.css']
-jss = ['script.js']
-static_route = '/Static/'
-
-# level_marks = ['Debug', 'Info', 'Warning', 'Error']
-level_marks = {0: 'Debug', 1: 'Info', 2: 'Warning', 3: 'Error'}
-num_marks = 4
-
-# left_column = html.Div([
-#     html.Div(html.H5('Data Download'), className='grey block2 mb-10'),
-#     html.Div([
-#         html.Div('Symbols:', className='four columns'),
-#         dcc.Dropdown(
-#             id='symbols',
-#             options=[{'label': name, 'value': name} for name in pd.read_csv('Static/sp500_companies.csv')['Symbol'].to_list()],
-#             #options=['AAPL', 'TSLA', 'MSFT', 'AMZN'], #Replace this with list
-#             multi=True,
-#             className='eight columns u-pull-right')
-#     ], className='row mb-10'),
-
-
-#     html.Button('Download', id='download-btn', n_clicks=0, style={'width': '60%', 'margin-left': 0, 'margin-right': '2%'}),
-                    
-
-    
-#     html.Br(),
-
-#     dbc.Row([
-#             html.Div(html.Hr(style={'borderWidth': "0.3vh", "width": "100%", "color": "#FEC700"}))
-#         ]),
-#     html.Div(html.H5('Generate Algorithm Code'), className='black-block2 mb-10'),
-#     html.Div([
-#         html.Div('Algos:', className='four columns'),
-#         dcc.Dropdown(id='module', options=[], className='eight columns u-pull-right')
-#         # dcc.Dropdown(
-#         #     id='module',
-#         #     options=[{'label': name, 'value': name} for name in oc.cfg['backtest']['modules'].split(',')],
-#         #     className='eight columns u-pull-right')
-#     ], className='row mb-10'),
-#     html.Div([
-#         html.Div('Strategy Name:', className='four columns'),
-#         #dcc.Dropdown(id='strategy', options=[], className='eight columns u-pull-right')
-#         dcc.Input(id='filename', className='eight columns u-pull-right', value = "MyStrategy")
-#     ], className='row mb-10'),
-
-#     html.Div([
-#         html.Div('Capital:', className='four columns'),
-#         #dcc.Dropdown(id='strategy', options=[], className='eight columns u-pull-right')
-#         dcc.Input(id='cash', className='eight columns u-pull-right', value = 10000)
-#     ], className='row mb-10'),
-
-#     html.Button('Generate Code', id='save-btn', n_clicks=0, style={'width': '60%', 'margin-left': 0, 'margin-right': '2%'}),
-
-#     html.Br(),
-#     dbc.Row([
-#             html.Div(html.Hr(style={'borderWidth': "0.3vh", "width": "100%", "color": "#FEC700"}))
-#         ]),
-
-    # html.Div(html.H5('Run Backtest'), className='black-block2 mb-10'),    
-
-    # html.Div([
-    #     html.Div('Backtest:', className='four columns'),
-    #     dcc.Dropdown(id='strategy', options=[], className='eight columns u-pull-right')
-    #     # dcc.Dropdown(
-    #     #     id='module',
-    #     #     options=[{'label': name, 'value': name} for name in oc.cfg['backtest']['modules'].split(',')],
-    #     #     className='eight columns u-pull-right')
-    # ], className='row mb-10'),
-
-    # html.Button('Run Backtest', id='backtest-btn', n_clicks=0, style={'width': '60%', 'margin-left': 0, 'margin-right': '0%'}),
-    # html.Div(
-    #     dash_table.DataTable(
-    #         row_selectable=ob.cash_param(),
-    #         # optional - sets the order of columns
-    #         columns=[{"name": i, "id": i} for i in['Parameter', 'Value']],
-    #         editable=True,
-    #         id='params-table'
-    #     ), className='row mb-10'),
-
-    # html.Div([
-    #     html.Div('Notes:'),
-    #     html.Textarea(id='notes-area', style={'width': '100%'})
-    # ], className='row', style={'vertical-align': 'bottom'}),
-# ], className="three columns gray-block", style={'position': 'absolute'})
-
-page = html.Div([
-	dbc.Card(
-		dbc.CardBody([
-			html.Br(),
-			dbc.Row([
-				dbc.Col([
-					# dbc.Card([
-					# 	dbc.CardHeader('Download Data', style={'color': DARK_ACCENT}),
-					# 	dbc.CardBody([
-					# 		# select stocks for backtest + download option
-					# 			html.Div([
-					# 				dcc.Dropdown(
-					# 					id='symbols',
-					# 					options=[{'label': name, 'value': name} for name in pd.read_csv('dashboard/Static/sp500_companies.csv')['Symbol'].to_list()],
-					# 					#options=['AAPL', 'TSLA', 'MSFT', 'AMZN'], #Replace this with list
-					# 					multi=True)
-					# 			]),
-
-					# 			html.Br(),
-
-					# 			html.Button('Download', id='download-btn', className='eight columns u-pull-right', n_clicks=0, style={'font-size': '15px', 'font-weight': '5', 'color': PRIMARY, 'background-color': ACCENT, "border-color":ACCENT, 'border-radius': 5}),
-					# 	]),
-					# ], color=PRIMARY, style={'border-radius': 10}),
-					#html.Br(),
-					dbc.Card([
-						dbc.CardHeader('Select Strategy', style={'color': DARK_ACCENT}),
-						dbc.CardBody([
-								# Generate code
-								html.Div([
-									#html.Div('Select Strategy:', className='four columns'),
-									dcc.Dropdown(id='moduleLiveTrade', options=[], className='eight columns u-pull-right')
-									# dcc.Dropdown(
-									#     id='module',
-									#     options=[{'label': name, 'value': name} for name in oc.cfg['backtest']['modules'].split(',')],
-									#     className='eight columns u-pull-right')
-								], className='row mb-10'),
-								# html.Br(),
-								# html.Div([
-								# 	html.Div('Strategy Name:', className='four columns'),
-								# 	#dcc.Dropdown(id='strategy', options=[], className='eight columns u-pull-right')
-								# 	dcc.Input(id='filename', className='eight columns u-pull-right', value = "MyStrategy", style={'margin-left': '10px', 'width': '210px', 'font-size': '15px', 'font-weight': '5', 'border-radius': 5})
-								# ], className='row mb-10'),
-
-								#html.Br(),
-
-								# html.Div([
-								# 	html.Div('Capital:', className='four columns'),
-								# 	#dcc.Dropdown(id='strategy', options=[], className='eight columns u-pull-right')
-								# 	dcc.Input(id='cash', className='eight columns u-pull-right', value = 10000, style={'margin-left': '10px', 'width': '210px', 'font-size': '15px', 'font-weight': '5', 'border-radius': 5})
-								# ], className='row mb-10'),
-								html.Br(),
-
-								html.Button('Run Live Trade', id='save-btn', n_clicks=0, className='eight columns u-pull-right', style={'font-size': '15px', 'font-weight': '5', 'color': PRIMARY, 'background-color': ACCENT, "border-color":ACCENT, 'border-radius': 5}),
-						]),
-					], color=PRIMARY, style={'border-radius': 10}),
-					#html.Br(),
-					# dbc.Card([
-					# 	dbc.CardHeader('Run Live Trade', style={'color': DARK_ACCENT}),
-					# 	dbc.CardBody([
-					# 			# Run backtest
-					# 			html.Div([
-					# 				dcc.Dropdown(id='strategy', options=[])
-					# 				# dcc.Dropdown(
-					# 				#     id='module',
-					# 				#     options=[{'label': name, 'value': name} for name in oc.cfg['backtest']['modules'].split(',')],
-					# 				#     className='eight columns u-pull-right')
-					# 			]),
-					# 			html.Br(),
-					# 			html.Button('Run Backtest', id='backtest-btn', className='eight columns u-pull-right', n_clicks=0, style={'font-size': '15px', 'font-weight': '5', 'color': PRIMARY, 'background-color': ACCENT, "border-color":ACCENT, 'border-radius': 5}),
-
-					# 			html.Div(id='intermediate-value', style={'display': 'none'}),
-					# 			html.Div(id='intermediate-params', style={'display': 'none'}),
-					# 			html.Div(id='code-generated', style={'display': 'none'}),
-					# 			html.Div(id='code-generated2', style={'display': 'none'}),
-					# 			# dcc.Download(id="download-data-csv"),
-					# 			html.Div(id='intermediate-status', style={'display': 'none'}),
-					# 			html.Div(id='level-log', contentEditable='True', style={'display': 'none'}),
-					# 			dcc.Input(id='log-uid', type='text', style={'display': 'none'})
-					# 		])
-					# ], color = PRIMARY, style ={'border-radius': 10}),
-						], width=2),
-						dbc.Col([
-							
-							html.Div([
-								dbc.Card(
-									dbc.CardBody([
-										dbc.Tabs(
-											[
-												dbc.Tab(dcc.Graph(id='charts',config={
-												'displayModeBar': False}), label='Results', className='nav-pills'),
-												# dbc.Tab(cumulative_returns_plot, label='Cumulative Returns', className='nav-pills'),
-												# dbc.Tab(annual_monthly_returns_plot, label='Annual and Monthly Returns', className='nav-pills'),
-												# dbc.Tab(rolling_sharpe_plot, label='Rolling Sharpe', className='nav-pills'),
-												# dbc.Tab(drawdown_periods_plot, label='unfinished', className='nav-pills'),
-												# dbc.Tab(drawdown_underwater_plot, label='Drawdown Underwater', className='nav-pills'),
-												# dbc.Tab(quantiles_plot, label='Scatter'),
-											],
-											id='tabs',
-											# active_tab='tab-1',
-										),
-										
-									]), color = SECONDARY, style ={'border-radius': 10}
-								),
-					]),
-				], width=7),
-
-				dbc.Col([
-					html.Div([
-						dbc.Card(
-							dbc.CardBody([
-								# html.Div(html.H5('Status'), className='black-block2 mb-10'),  
-								# 	html.Div([
-								# 		#html.Button('Download', id='download-btn', n_clicks=0, style={'width': '30%', 'margin-left': 0, 'margin-right': '2%'}),
-								# 		#html.Button('AutoCode', id='save-btn', n_clicks=0, style={'width': '30%', 'margin-left': 0, 'margin-right': '2%'}),
-								# 		#html.Button('Backtest', id='backtest-btn', n_clicks=0, style={'width': '34%', 'margin-left': 0, 'margin-right': '0%'}),
-															
-								# 	]),
-								# 	html.Div(id='status-area', style={
-								# 		'margin-top': '10px',
-								# 		'padding-left': '10px',
-								# 		'border': '1px solid black',
-								# 		'line-height': '40px',
-								# 		'min-height': '40px',
-								# 	}),
-								html.Div(id='stat-block')
-							]), color = SECONDARY, style ={'border-radius': 10}
-						)
-					])
-				], width=3)
-			]),
-		])
-	)
-    ], id='graph-container', style={'margin-bottom':'30rem'}
-        # style={'position': 'absolute', 'top': '0px', 'bottom': '0px', 'left': '0px', 'right': '0px'})
-)
-# , className='offset-by-three six columns gray-block', style={'position': 'absolute', 'top': 0,  'bottom': '9.2em'})
-
-# right_column = html.Div([
-#     html.Div(
-#         html.Div([
-#             html.Div([
-#                 html.Div(html.H5('Status'), className='black-block2 mb-10'),  
-#                 html.Div([
-#                     #html.Button('Download', id='download-btn', n_clicks=0, style={'width': '30%', 'margin-left': 0, 'margin-right': '2%'}),
-#                     #html.Button('AutoCode', id='save-btn', n_clicks=0, style={'width': '30%', 'margin-left': 0, 'margin-right': '2%'}),
-#                     #html.Button('Backtest', id='backtest-btn', n_clicks=0, style={'width': '34%', 'margin-left': 0, 'margin-right': '0%'}),
-                                        
-#                 ]),
-#                 html.Div(id='status-area', style={
-#                     'margin-top': '10px',
-#                     'padding-left': '10px',
-#                     'border': '1px solid black',
-#                     'line-height': '40px',
-#                     'min-height': '40px',
-#                 })
-#             ], className='gray-block mb-10'),
-#             html.Div(id='stat-block', className='block',
-#                     style={'position': 'absolute', 'top': '155px', 'left': '75.75%', 'right': 0}),
-#         ], className='twelve columns'), className='row'),
-# ], className='offset-by-nine three columns')
-
-# bottom = html.Div([
-#     html.Div([
-#         html.Div('Logs:', className='one columns'),
-#         html.Div('Level:', className='one columns'),
-#         html.Div([
-#             dcc.RangeSlider(
-#                 id='level-slider',
-#                 marks=level_marks,
-#                 min=0,
-#                 max=num_marks-1,
-#                 step=1,
-#                 value=[0, num_marks-1],
-#             )
-#         ], className='five columns', style={'margin-top': '-0.5em', 'margin-left': '-1em', })
-#     ], className='row mb-10'),
-#     html.Iframe(id='log-frame', style={
-#         'width': '100%',
-#         'background-color': 'white',
-#         'border': '1px solid black',
-#         'min-height': '20em',
-#         'margin-bottom': '-1em'
-#     }, className='row'),
-# ], className='gray-block')
-
-
-
-
-
 def make_layout():
 
-	return page
-
-	# return html.Div([ 
-    #     html.Div(
-    #         [
-    #         html.Div([
-    #             html.Div([
-    #                 left_column, center, right_column
-    #             ], className='row', style={'position': 'absolute', 'bottom': '18em', 'top': '7em', 'right': '1em', 'width': '99%'}),
-    #             # html.Div(
-    #             #     bottom
-    #             #     , className='row', style={'position': 'absolute', 'bottom': '0.5em', 'right': '1em', 'width': '99%'})
-    #         ]),
-    #         html.Div(id='intermediate-value', style={'display': 'none'}),
-    #         html.Div(id='intermediate-params', style={'display': 'none'}),
-    #         html.Div(id='code-generated', style={'display': 'none'}),
-    #         html.Div(id='code-generated2', style={'display': 'none'}),
-    #         # dcc.Download(id="download-data-csv"),
-    #         html.Div(id='intermediate-status', style={'display': 'none'}),
-    #         html.Div(id='level-log', contentEditable='True', style={'display': 'none'}),
-    #         dcc.Input(id='log-uid', type='text', style={'display': 'none'})
-            
-    #     ], style={'height': '90vh', 'width': '90vw'}
-    # ),
-        
-         
-    
-# ])
 	# if symbol is None:
-	# 	symbol = 'AAPL'
-	# 	# app.equity_df.append(yf.download(tickers='AAPL',period='1d',interval='1m', group_by='ticker', auto_adjust = False, prepost = False, threads = True, proxy = None))
+	symbol = 'AAPL'
+		# app.equity_df.append(yf.download(tickers='AAPL',period='1d',interval='1m', group_by='ticker', auto_adjust = False, prepost = False, threads = True, proxy = None))
 	# full_report, top_stats, cumulative_returns_plot, annual_monthly_returns_plot, rolling_sharpe_plot, drawdown_periods_plot, drawdown_underwater_plot = key_metrics(symbol)
-	# kurtosis, profit_ratio, expected_return, exposure, tail_ratio, value_at_risk, payoff_ratio, skew, win_rate, outlier_loss_ratio = top_stats
-	# headline_stats_df = pd.DataFrame.from_dict({'kurtosis': [kurtosis], 'profit_ratio': [profit_ratio], 'expected_return': [expected_return], 
-	# 		'exposure':[exposure], 'tail_ratio':[tail_ratio], 'value_at_risk':[value_at_risk], 'payoff_ratio':[payoff_ratio],
-	# 		 'skew':[skew], 'win_rate':[win_rate], 'outlier_loss_ratio':[outlier_loss_ratio]})
-	# df_dict['Top Stats'] = headline_stats_df
+	top_stats, cumulative_returns_plot, annual_monthly_returns_plot, rolling_sharpe_plot= key_metrics(symbol)
+	kurtosis, profit_ratio, expected_return, exposure, tail_ratio, value_at_risk, payoff_ratio, skew, win_rate, outlier_loss_ratio = top_stats
+	headline_stats_df = pd.DataFrame.from_dict({'kurtosis': [kurtosis], 'profit_ratio': [profit_ratio], 'expected_return': [expected_return], 
+			'exposure':[exposure], 'tail_ratio':[tail_ratio], 'value_at_risk':[value_at_risk], 'payoff_ratio':[payoff_ratio],
+			 'skew':[skew], 'win_rate':[win_rate], 'outlier_loss_ratio':[outlier_loss_ratio]})
+	df_dict['Top Stats'] = headline_stats_df
 
-	# return html.Div([
-	# 	dbc.Card(
-	# 		dbc.CardBody([
-	# 			dbc.Row([
-	# 				dbc.Col([
-	# 					drawText('Kurtosis', kurtosis)
-	# 				]),
-	# 				dbc.Col([
-	# 					drawText('Profit Ratio', profit_ratio)
-	# 				]),
+	return html.Div([
+		dbc.Card(
+			dbc.CardBody([
+				dbc.Row([
+					dbc.Col([
+						drawText('Kurtosis', kurtosis)
+					]),
+					dbc.Col([
+						drawText('Profit Ratio', profit_ratio)
+					]),
 
-	# 				dbc.Col([
-	# 					drawText('Exposure', exposure)
-	# 				]),
-	# 				dbc.Col([
-	# 					drawText('Tail Ratio', tail_ratio)
-	# 				]),
-	# 				dbc.Col([
-	# 					drawText('Value at Risk', value_at_risk)
-	# 				]),
-	# 				dbc.Col([
-	# 					drawText('Payoff Ratio', payoff_ratio)
-	# 				]),
-	# 				dbc.Col([
-	# 					drawText('Skew', skew)
-	# 				]),
-	# 				dbc.Col([
-	# 					drawText('Win Rate', win_rate)
-	# 				]),
-	# 				# dbc.Col([
-	# 				# 	drawText('Outlier loss Ratio', outlier_loss_ratio)
-	# 				# ]),
+					dbc.Col([
+						drawText('Exposure', exposure)
+					]),
+					dbc.Col([
+						drawText('Tail Ratio', tail_ratio)
+					]),
+					dbc.Col([
+						drawText('Value at Risk', value_at_risk)
+					]),
+					dbc.Col([
+						drawText('Payoff Ratio', payoff_ratio)
+					]),
+					dbc.Col([
+						drawText('Skew', skew)
+					]),
+					dbc.Col([
+						drawText('Win Rate', win_rate)
+					]),
+					# dbc.Col([
+					# 	drawText('Outlier loss Ratio', outlier_loss_ratio)
+					# ]),
 					
-	# 			]), 
-	# 			html.Br(),
-	# 			dbc.Row([
-	# 				# dbc.Col([
-	# 				# 	eps_trend(symbol),
-	# 				# 	eps_revisions(symbol)
-	# 				# ], width=3),
-	# 				dbc.Col([
-	# 					dbc.Tabs(
-	# 				[
-	# 					dbc.Tab(cumulative_returns_plot, label='Cumulative Returns', className='nav-pills'),
-	# 					dbc.Tab(annual_monthly_returns_plot, label='Annual and Monthly Returns', className='nav-pills'),
-	# 					dbc.Tab(rolling_sharpe_plot, label='Rolling Sharpe', className='nav-pills'),
-	# 					dbc.Tab(drawdown_periods_plot, label='unfinished', className='nav-pills'),
-	# 					dbc.Tab(drawdown_underwater_plot, label='Drawdown Underwater', className='nav-pills'),
-	# 					# dbc.Tab(quantiles_plot, label='Scatter'),
-	# 				],
-	# 				id='tabs',
-	# 				# active_tab='tab-1',
-	# 			),
-	# 				], width=9),
-	# 				dbc.Col([
-	# 					full_report
-	# 				], width=3),
-	# 			], align='center'), 
-	# 			html.Br(),
+				]), 
+				html.Br(),
+				dbc.Row([
+					# dbc.Col([
+					# 	eps_trend(symbol),
+					# 	eps_revisions(symbol)
+					# ], width=3),
+					dbc.Col([
+						dbc.Tabs(
+					[
+						dbc.Tab(cumulative_returns_plot, label='Cumulative Returns', className='nav-pills'),
+						dbc.Tab(annual_monthly_returns_plot, label='Annual and Monthly Returns', className='nav-pills'),
+						dbc.Tab(rolling_sharpe_plot, label='Rolling Sharpe', className='nav-pills'),
+						#dbc.Tab(drawdown_periods_plot, label='unfinished', className='nav-pills'),
+						#dbc.Tab(drawdown_underwater_plot, label='Drawdown Underwater', className='nav-pills'),
+						# dbc.Tab(quantiles_plot, label='Scatter'),
+					],
+					id='tabs',
+					# active_tab='tab-1',
+				),
+					], width=9),
+					dbc.Col([
+						#full_report
+					], width=3),
+				], align='center'), 
+				html.Br(),
 				
      
-	# 		]), color = PRIMARY, style ={'border-radius': 10} # all cell border
-	# 	)
-	# ], style={'margin-bottom':'30rem'}
-	
-# )
+			]), color = PRIMARY, style ={'border-radius': 10} # all cell border
+		)
+	], style={'margin-bottom':'30rem'})
 
 
 
@@ -541,15 +219,12 @@ def key_metrics(symbol):
 		'''
 		Determines peak, valley, and recovery dates given an 'underwater'
 		DataFrame.
-
 		An underwater DataFrame is a DataFrame that has precomputed
 		rolling drawdown.
-
 		Parameters
 		----------
 		underwater : pd.Series
 		Underwater returns (rolling drawdown) of a strategy.
-
 		Returns
 		-------
 		peak : datetime
@@ -577,7 +252,6 @@ def key_metrics(symbol):
 		Wrapper for pandas.io.data.get_data_yahoo().
 		Retrieves prices for symbol from yahoo and computes returns
 		based on adjusted closing prices.
-
 		Parameters
 		----------
 		symbol : str
@@ -586,7 +260,6 @@ def key_metrics(symbol):
 			Start date of time period to retrieve
 		end : pandas.Timestamp compatible, optional
 			End date of time period to retrieve
-
 		Returns
 		-------
 		pandas.DataFrame
@@ -594,7 +267,9 @@ def key_metrics(symbol):
 		'''
 
 		try:
-			px = web.get_data_yahoo(symbol, start=start, end=end)
+			#px = web.get_data_yahoo(symbol, start=start, end=end)
+			data_dir = "dashboard/Data/"  
+			px = pd.read_csv(os.path.join(data_dir, symbol+".csv"), parse_dates=True)
 			px['date'] = px.index.to_list()
 			#px['date'] = px['date'].apply(lambda x: pd.Timestamp(x))
 			#px['date'] = pd.to_datetime(px['date'])
@@ -602,8 +277,8 @@ def key_metrics(symbol):
 			px.set_index('date', drop=False, inplace=True)
 			
 			#px.index.rename('date',inplace=True)
-			rets = px[['Adj Close']].pct_change().dropna()
-			rets.rename(columns={'Adj Close': 'adjclose'},inplace=True)
+			rets = px[['Close']].pct_change().dropna()
+			rets.rename(columns={'Close': 'adjclose'},inplace=True)
 		except Exception as e:
 			warnings.warn(
 				'Yahoo Finance read failed: {}, falling back to Google'.format(e),
@@ -793,8 +468,8 @@ def key_metrics(symbol):
 		)
 
 		return beautify_plotly(fig)
-	return full_report(), top_stats(), cumulative_returns_plot(), annual_monthly_returns_plot(), rolling_sharpe_plot(), drawdown_periods_plot(), drawdown_underwater_plot()
-
+	# return full_report(), top_stats(), cumulative_returns_plot(), annual_monthly_returns_plot(), rolling_sharpe_plot(), drawdown_periods_plot(), drawdown_underwater_plot()
+	return  top_stats(), cumulative_returns_plot(), annual_monthly_returns_plot(), rolling_sharpe_plot()	
 
 
 
@@ -919,326 +594,3 @@ def cash_flows(symbol):
 	# 		return income_statement(symbol)
 	# 	elif tab == 'cash-flows':
 	# 		return cash_flows(symbol)
-def register_callbacks(app):
-
-	@app.server.route('{}<file>'.format(static_route))
-	def serve_file2(file):
-		if file not in stylesheets and file not in jss:
-			raise Exception('"{}" is excluded from the allowed static css files'.format(file))
-		static_directory = os.path.join(root_directory, 'Static')
-		return flask.send_from_directory(static_directory, file)
-
-	@app.callback(Output('moduleLiveTrade', 'options'), [Input('symbols', 'value')])
-	def update_algo_list(symbols):
-
-		all_files = os.listdir("dashboard/SampleStrategies") 
-		algo_files = list(filter(lambda f: f.endswith('.py'), all_files))
-		algo_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in algo_files]
-		#print(algo_avlb)    
-		return algo_avlb
-
-	# @app.callback(Output('strategy', 'options'), [Input('module', 'value')])
-	# def update_strategy_list(module_name):
-	#     data = ob.test_list(module_name)
-	#     return [{'label': name, 'value': name} for name in data]
-
-	@app.callback(Output('strategy', 'options'), [Input('symbols', 'value')])
-	def update_strategy_list(symbols):  
-		print("strat called")
-		all_files = os.listdir("dashboard/MyStrategies")    
-		backtest_files = list(filter(lambda f: f.endswith('.py'), all_files))
-		backtest_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in backtest_files]  
-		#print(backtest_avlb) 
-		return backtest_avlb
-
-	# I think this callback is not needed. No html tag with id = 'params-table' is there
-	# Commenting out it for now.
-
-	# @app.callback(Output('params-table', 'columns'), [Input('module', 'value'), Input('strategy', 'value'), Input('symbols', 'value')])
-	# def update_params_list(module_name, strategy_name, symbol):
-	#     return ob.params_list(module_name, strategy_name, symbol)
-
-
-	@app.callback(Output('strategy', 'value'), [Input('strategy', 'options')])
-	def update_strategy_value(options):
-		if len(options):
-			#print(options)
-			return options[0]
-		return ''
-
-
-	# @app.callback(Output('status-area', 'children'),
-	#               [
-	#                   Input('backtest-btn', 'n_clicks'),
-	#                   Input('intermediate-params', 'children'),
-	#                   Input('intermediate-value', 'children')
-	#               ])
-	# def update_status_area(n_clicks, packed_params, result):
-	#     if result:
-	#         return 'Done!'
-	#     if n_clicks == 0:
-	#         return ''
-	#     module, strategy, symbol = None, None, None
-	#     try:
-	#         params = json.loads(packed_params)
-	#         if 'module_i' in params:
-	#             module = params['module_i']
-	#         if 'strategy_i' in params:
-	#             strategy = None if params['strategy_i'] == '' else params['strategy_i']
-	#         if 'symbols_i' in params:
-	#             symbol = params['symbols_i']
-	#     except:
-	#         pass
-	#     to_provide = []
-	#     if module is None:
-	#         to_provide.append('module')
-	#     if strategy is None:
-	#         to_provide.append('strategy')
-	#     if symbol is None:
-	#         to_provide.append('symbol')
-	#     if len(to_provide):
-	#         return 'Please provide a value for: {}!'.format(', '.join(to_provide))
-
-	#     return "Backtesting.."
-
-
-	####  Run Backtest button #####
-	
-	@app.callback(Output('status-area', 'children'),
-				[
-					Input('backtest-btn', 'n_clicks'),
-					Input('strategy', 'value'),
-					Input('intermediate-value', 'children')
-				])
-	def update_status_area(n_clicks, strategy, result):
-		if result:
-			return 'Done!'
-		if n_clicks == 0:
-			return ''
-		#strategy = None 
-		
-		if strategy is None:       
-			return 'Please provide a value for: {}!'.format(', '.join(strategy))
-
-		return "Backtesting.."    
-
-
-	@app.callback(Output('log-uid', 'value'), [Input('symbols', 'options')]) #Why do we need this???
-	def create_uid(m):
-		return uuid.uuid4().hex
-
-
-	@app.callback(Output('intermediate-value', 'children'), [Input('strategy', 'value'),Input('backtest-btn', 'n_clicks')])
-	def on_click_backtest_to_intermediate(strategy, n_clicks):
-		try:
-			if strategy is None:
-				return []
-			#return ob.create_ts(uid, module, strategy, symbols, params)
-			result = ob.create_ts2(strategy)
-			print("result of backtesting....")
-			print(result)
-			return result
-		except json.decoder.JSONDecodeError:
-			# Ignoring this error (this is happening when inputting values in Module/Strategy boxes)
-			print("Exception throw ho gya")
-			return []    
-
-
-	# @app.callback(Output('intermediate-value', 'children'),
-	#               [Input('intermediate-params', 'children'), Input('log-uid', 'value')])
-	# def on_click_backtest_to_intermediate(json_packed, uid):
-	#     try:
-	#         unpacked = json.loads(json_packed)
-	#         module = unpacked['module_i']
-	#         strategy = unpacked['strategy_i']
-	#         symbols = unpacked['symbols_i']
-	#         params = unpacked['table_params']
-	#         #params = {}
-	#         if module is None or strategy is None or symbols is None:
-	#             return []
-	#         #return ob.create_ts(uid, module, strategy, symbols, params)
-	#         return ob.create_ts2()
-	#     except json.decoder.JSONDecodeError:
-	#         # Ignoring this error (this is happening when inputting values in Module/Strategy boxes)
-	#         return []
-
-
-	@app.callback(Output('backtest-btn', 'n_clicks'),
-				[
-					#Input('module', 'value'),
-					Input('strategy', 'value')
-					#Input('symbols', 'value'),
-					#Input('params-table', 'columns')
-				])
-	def reset_button(*args):
-		return 0
-
-
-	# @app.callback(Output('intermediate-params', 'children'),
-	#               [
-	#                   Input('backtest-btn', 'n_clicks'),
-	#                   Input('module', 'value'),
-	#                   Input('strategy', 'value'),
-	#                   Input('symbols', 'value')#,
-	#                   #Input('params-table', 'columns')
-	#               ])
-	# def update_params(n_clicks, module, strategy, symbol, rows):
-	#     if n_clicks == 0:
-	#         return ''
-	#     params = {'module_i': module, 'strategy_i': strategy, 'symbols_i': symbol}
-	#     table_params = {}
-	#     for row in rows:
-	#         table_params[row['name']] = str(row['id'])
-	#     params['table_params'] = table_params
-	#     return json.dumps(params)
-
-
-
-	######   Code generate Button  #####
-
-	#Add code later to make sure that enter cash and symbols
-	@app.callback(Output('code-generated', 'children'),
-				[
-					Input('save-btn', 'n_clicks'),
-					Input('cash', 'value'),
-					Input('module', 'value'),
-					Input('symbols', 'value'),
-					Input('filename', 'value'),
-				])
-	def create_code(n_clicks, cash, module, symbols, filename):
-		if n_clicks == 0:
-			return '' 
-
-		data = data2 = ""
-		
-		backtest_code = '''                
-
-	def backtest():
-		cash = {cash}
-		symbols = {symbols}
-		#start_date = '2018-01-01'
-		data_dir = "Data/"  
-
-		cerebro = bt.Cerebro()
-		cerebro.broker.setcash(cash)
-
-		for s in symbols:            
-				df = pd.read_csv(os.path.join(data_dir, s+".csv"), parse_dates=True, index_col=0)
-				data = bt.feeds.PandasData(dataname=df)
-				cerebro.adddata(data)
-		# Strategy
-		cerebro.addstrategy({module})
-
-
-		cerebro.addanalyzer(bt.analyzers.PyFolio, _name='pyfolio')
-		cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
-		cerebro.addanalyzer(bt.analyzers.SQN, _name='SQN')
-		cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name='trades')
-		
-		# Backtest 
-		
-		print('Starting Portfolio Value: ',  cerebro.broker.getvalue())
-		plt.rcParams['figure.figsize']=[10,6]
-		plt.rcParams["font.size"]="12"
-
-		# Run over everything
-		results = cerebro.run()
-		pnl = cerebro.broker.getvalue() - cash
-		#cerebro.plot()
-		# Print out the final result
-		print('Final Portfolio Value: ',  cerebro.broker.getvalue()) 
-		
-		return pnl, results[0]    
-
-	#end of function for '{symbols}' with capital '{cash}'
-			
-					'''.format(symbols=symbols, cash = cash, module = module)
-
-		strategy_file=module+".py"
-		strategy_file = "SampleStrategies/"+strategy_file
-
-		with open(strategy_file) as fp:
-			data = fp.read()
-		
-		data += "\n"
-		data += backtest_code
-		path_dir = "MyStrategies/"
-		filename_save = filename+".py"
-		
-		with open (os.path.join(path_dir, filename_save), 'w') as fp:
-			fp.write(data)
-			
-		return 0 
-
-	#####  Download Button #####
-
-	@app.callback(Output('code-generated2', 'children'),
-				[
-					Input('download-btn', 'n_clicks'),
-					Input('symbols', 'value')
-				])
-	def download_data(n_clicks, symbols ):
-		if n_clicks == 0:
-			return '' 
-		#symbols = ['TSLA', 'GE']
-		print("testing Datas ") 
-		print(symbols)   
-		for s in symbols:
-				df = yf.download(s, start = "2018-01-01")
-				data_dir = "Data/"
-				filename = s +".csv"
-				df.to_csv(os.path.join(data_dir, filename)) 
-		#return dcc.send_data_frame(df.to_csv, filename) 
-		# module_name = "FromBackTrader"
-		# module = importlib.import_module(module_name)
-		# pnl, results = module.backtest()
-		#result = subprocess.getstatusoutput('python FromBackTrader.py' )  
-		return 0     
-
-	@app.callback(Output('charts', 'figure'),
-				[Input('intermediate-value', 'children'), Input('log-uid', 'value')], prevent_initial_call=True)
-	def on_intermediate_to_chart(children, uid):
-		# r = redis.StrictRedis(oc.cfg['default']['redis'], 6379, db=0)
-		# size = r.get(uid + 'size')
-		# w, h = size.decode('utf8').split(',')
-		# return ob.extract_figure(children, w, h)
-		if len(children) == 0:
-			return dash.no_update
-		return ob.extract_figure(children)
-
-	#Commenting it out for now as there is no level-slider exist.
-
-	# @app.callback(
-	#     dash.dependencies.Output('level-log', 'children'),
-	#     [dash.dependencies.Input('level-slider', 'value')])
-	# def level_output(value):
-	#     begin, end = value
-	#     res = []
-	#     for i in range(begin, end+1):
-	#         res.append(level_marks[i].upper())
-	#     return ','.join(res)
-
-
-	@app.callback(Output('stat-block', 'children'), [Input('intermediate-value', 'children')])
-	def on_intermediate_to_stat(children):
-		statistic = ob.extract_statistic(children)
-		ht = []
-		for section in statistic:
-			ht.append(html.Div(html.B(section, style={'font-size': '1.1em', 'line-height': '1.5m'}), className='row'))
-			for stat in statistic[section]:
-				ht.append(
-					html.Div([
-						html.Div(stat, className='u-pull-left'),
-						html.Div(html.B(statistic[section].get(stat)), className='u-pull-right')
-					], className='row'))
-			ht.append(html.Div(style={'border': '1px solid #999', 'margin': '10px 10px 5px'}))
-		return html.Div(html.Div(ht[:-1], className='twelve columns', style={'line-height': '1.4em'}), className='row')
-
-
-	# if not debug_mode:
-	#     auth = dash_auth.BasicAuth(
-	#         app,
-	#         ob.get_users()
-	#     )
-
-	
