@@ -130,7 +130,11 @@ page = html.Div([
 						dbc.CardBody([
 								# Run backtest
 								html.Div([
-									dcc.Dropdown(id='backtest-strategy', options=[], className='eight columns u-pull-right')
+									dcc.Dropdown(
+										id='backtest-strategy', 
+										options=[s.rsplit( ".", 1 )[ 0 ] for s in list(filter(lambda f: f.endswith('.py'), os.listdir("dashboard/MyStrategies")))],
+									)
+									#backtest_avlb = 
 									# dcc.Dropdown(
 									#     id='module',
 									#     options=[{'label': name, 'value': name} for name in oc.cfg['backtest']['modules'].split(',')],
@@ -158,7 +162,7 @@ page = html.Div([
 										dbc.Tabs(
 											[
 												dbc.Tab(dcc.Graph(id='charts',config={
-												'displayModeBar': False}), label='Backtest', className='nav-pills'),
+												'displayModeBar': False}), label='Backtest Results', className='nav-pills'),
 												# dbc.Tab(cumulative_returns_plot, label='Cumulative Returns', className='nav-pills'),
 												# dbc.Tab(annual_monthly_returns_plot, label='Annual and Monthly Returns', className='nav-pills'),
 												# dbc.Tab(rolling_sharpe_plot, label='Rolling Sharpe', className='nav-pills'),
@@ -272,16 +276,6 @@ def close_tmp_file(tf):
 # 	filepath = Path('/finailab_dash/Static/download_folder/' + name + '.csv')
 # 	filepath.parent.mkdir(parents=True, exist_ok=True)
 # 	df.to_csv(filepath)
-
-
-# @app.callback(Output('backtest-strategy', 'options'), [Input('symbols', 'value')])
-# 	def update_algo_list(symbols):
-
-# 		all_files = os.listdir("dashboard/MyStrategies") 
-# 		algo_files = list(filter(lambda f: f.endswith('.py'), all_files))
-# 		algo_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in algo_files]
-# 		#print(algo_avlb)    
-# 		return algo_avlb
 
 # Text field
 def drawText(title, text):
@@ -707,28 +701,29 @@ def register_callbacks(app):
 		static_directory = os.path.join(root_directory, 'Static')
 		return flask.send_from_directory(static_directory, file)
 
-	@app.callback(Output('module', 'options'), [Input('symbols', 'value')])
-	def update_algo_list(symbols):
+	# @app.callback(Output('module', 'options'), [Input('symbols', 'value')])
+	# def update_algo_list(symbols):
 
-		all_files = os.listdir("SampleStrategies") 
-		algo_files = list(filter(lambda f: f.endswith('.py'), all_files))
-		algo_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in algo_files]
-		#print(algo_avlb)    
-		return algo_avlb
+	# 	all_files = os.listdir("SampleStrategies") 
+	# 	algo_files = list(filter(lambda f: f.endswith('.py'), all_files))
+	# 	algo_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in algo_files]
+	# 	#print(algo_avlb)    
+	# 	return algo_avlb
 
 	# @app.callback(Output('strategy', 'options'), [Input('module', 'value')])
 	# def update_strategy_list(module_name):
 	#     data = ob.test_list(module_name)
 	#     return [{'label': name, 'value': name} for name in data]
 
-	@app.callback(Output('backtest-strategy', 'options'), [Input('symbols', 'value')])
-	def update_strategy_list(symbols):  
-		print("strat called")
-		all_files = os.listdir("dshboard/MyStrategies")    
-		backtest_files = list(filter(lambda f: f.endswith('.py'), all_files))
-		backtest_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in backtest_files]  
-		#print(backtest_avlb) 
-		return backtest_avlb
+	# @app.callback(Output('strategy', 'options'), [Input('symbols', 'value')])
+	# def update_strategy_list(symbols):  
+	# 	print("strat called")
+	# 	all_files = os.listdir("dashboard/MyStrategies")    
+	# 	backtest_files = list(filter(lambda f: f.endswith('.py'), all_files))
+	# 	backtest_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in backtest_files] 
+	# 	#backtest_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in list(filter(lambda f: f.endswith('.py'), os.listdir("dashboard/MyStrategies")))] 
+	# 	#print(backtest_avlb) 
+	# 	return backtest_avlb
 
 	# I think this callback is not needed. No html tag with id = 'params-table' is there
 	# Commenting out it for now.
@@ -786,7 +781,7 @@ def register_callbacks(app):
 	@app.callback(Output('status-area', 'children'),
 				[
 					Input('backtest-btn', 'n_clicks'),
-					Input('strategy', 'value'),
+					Input('backtest-strategy', 'value'),
 					Input('intermediate-value', 'children')
 				])
 	def update_status_area(n_clicks, strategy, result):
@@ -807,7 +802,7 @@ def register_callbacks(app):
 		return uuid.uuid4().hex
 
 
-	@app.callback(Output('intermediate-value', 'children'), [Input('strategy', 'value'),Input('backtest-btn', 'n_clicks')])
+	@app.callback(Output('intermediate-value', 'children'), [Input('backtest-strategy', 'value'),Input('backtest-btn', 'n_clicks')])
 	def on_click_backtest_to_intermediate(strategy, n_clicks):
 		try:
 			if strategy is None:

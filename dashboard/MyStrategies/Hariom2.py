@@ -45,9 +45,9 @@ class TestStrategy(bt.Strategy):
 
 def backtest():
     cash = 10000
-    symbols = ['AAPL', 'TSLA', 'MSFT', 'AMZN']
+    symbols = ['AAPL', 'TSLA']
     #start_date = '2018-01-01'
-    data_dir = "Data/"  
+    data_dir = "dashboard/Data/"  
 
     cerebro = bt.Cerebro()
     cerebro.broker.setcash(cash)
@@ -68,8 +68,8 @@ def backtest():
     # Backtest 
     
     print('Starting Portfolio Value: ',  cerebro.broker.getvalue())
-    plt.rcParams['figure.figsize']=[10,6]
-    plt.rcParams["font.size"]="12"
+    # plt.rcParams['figure.figsize']=[10,6]
+    # plt.rcParams["font.size"]="12"
 
     # Run over everything
     results = cerebro.run()

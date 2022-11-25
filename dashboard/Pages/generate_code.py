@@ -187,9 +187,10 @@ def register_callbacks(app):
 		with open(strategy_file) as fp:
 			data = fp.read()
 		
+		
 		data += "\n"
 		data += backtest_code
-		path_dir = "dashboard/MyStrategies/"
+		path_dir = "dashboard/MySrategies/"
 		filename_save = filename+".py"
 		
 		with open (os.path.join(path_dir, filename_save), 'w') as fp:

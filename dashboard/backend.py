@@ -109,7 +109,7 @@ def create_ts2(strategy):
         # for k, v in params.items():
         #     params[k] = json.loads(v)
 
-        module_name = "MyStrategies."+strategy
+        module_name = "dashboard.MyStrategies."+strategy
         module = importlib.import_module(module_name)
         pnl, strat = module.backtest() #Check for the issues??    
         # pnl, strat = backtest.run(symbols, cash, strategy, **params)
