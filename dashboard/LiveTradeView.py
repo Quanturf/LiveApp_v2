@@ -55,6 +55,46 @@ def make_layout():
 	df_dict['Top Stats'] = headline_stats_df
 
 	return html.Div([
+		dbc.Col([					
+					dbc.Card([
+						dbc.CardHeader('Select Strategy', style={'color': DARK_ACCENT}),
+						dbc.CardBody([
+								# Run backtest
+								html.Div([
+									dcc.Dropdown(
+										id='backtest-strategy', 
+										options=[s.rsplit( ".", 1 )[ 0 ] for s in list(filter(lambda f: f.endswith('.py'), os.listdir("dashboard/MyStrategies")))],
+									)
+									#backtest_avlb = 
+									# dcc.Dropdown(
+									#     id='module',
+									#     options=[{'label': name, 'value': name} for name in oc.cfg['backtest']['modules'].split(',')],
+									#     className='eight columns u-pull-right')
+								]),
+
+								html.Br(),
+								dbc.Row([
+									#html.Br(),
+										dbc.Col([
+											html.Button('Live Trade', id='backtest-btn', className='eight columns u-pull-right', n_clicks=0, style={'font-size': '15px', 'font-weight': '5', 'color': PRIMARY, 'background-color': ACCENT, "border-color":ACCENT, 'border-radius': 5}),
+										]),
+									html.Br(),
+
+									dbc.Col([
+										html.Button('Cloud Deploy', id='backtest-btn', className='eight columns u-pull-right', n_clicks=0, style={'font-size': '15px', 'font-weight': '5', 'color': PRIMARY, 'background-color': ACCENT, "border-color":ACCENT, 'border-radius': 5}),
+									]),
+								]),
+								html.Div(id='intermediate-value', style={'display': 'none'}),
+								html.Div(id='intermediate-params', style={'display': 'none'}),
+								html.Div(id='code-generated', style={'display': 'none'}),
+								html.Div(id='code-generated2', style={'display': 'none'}),
+								# dcc.Download(id="download-data-csv"),
+								html.Div(id='intermediate-status', style={'display': 'none'}),
+								html.Div(id='level-log', contentEditable='True', style={'display': 'none'}),
+								dcc.Input(id='log-uid', type='text', style={'display': 'none'})
+							])
+					], color = PRIMARY, style ={'border-radius': 10}),
+						], width=3),
 		dbc.Card(
 			dbc.CardBody([
 				dbc.Row([
