@@ -59,26 +59,26 @@ def make_layout():
 			dbc.CardBody([
 				dbc.Row([
 					dbc.Col([
-						drawText('Dollar PnL', kurtosis)
+						drawText('Kurtosis', kurtosis)
 					]),
 					dbc.Col([
-						drawText('Return', profit_ratio)
+						drawText('Profit Ratio', profit_ratio)
 					]),
 
 					dbc.Col([
-						drawText('Realized PL', exposure)
+						drawText('Exposure', exposure)
 					]),
 					dbc.Col([
-						drawText('Unrealized PL', tail_ratio)
+						drawText('Tail Ratio', tail_ratio)
 					]),
 					dbc.Col([
-						drawText('Total Val.', value_at_risk)
+						drawText('Value at Risk', value_at_risk)
 					]),
 					dbc.Col([
-						drawText('Max DD', payoff_ratio)
+						drawText('Payoff Ratio', payoff_ratio)
 					]),
 					dbc.Col([
-						drawText('Aval. Cash', skew)
+						drawText('Skew', skew)
 					]),
 					dbc.Col([
 						drawText('Win Rate', win_rate)
@@ -97,9 +97,9 @@ def make_layout():
 					dbc.Col([
 						dbc.Tabs(
 					[
-						dbc.Tab(cumulative_returns_plot, label='Performance', className='nav-pills'),
-						dbc.Tab(annual_monthly_returns_plot, label='Closed Position', className='nav-pills'),
-						dbc.Tab(rolling_sharpe_plot, label='Open Positions', className='nav-pills'),
+						dbc.Tab(cumulative_returns_plot, label='Cumulative Returns', className='nav-pills'),
+						dbc.Tab(annual_monthly_returns_plot, label='Annual and Monthly Returns', className='nav-pills'),
+						dbc.Tab(rolling_sharpe_plot, label='Rolling Sharpe', className='nav-pills'),
 						#dbc.Tab(drawdown_periods_plot, label='unfinished', className='nav-pills'),
 						#dbc.Tab(drawdown_underwater_plot, label='Drawdown Underwater', className='nav-pills'),
 						# dbc.Tab(quantiles_plot, label='Scatter'),
@@ -192,7 +192,7 @@ def drawText(title, text):
 				html.Div([
 					# html.Header(title, style={'color': 'white', 'fontSize': 15, 'text-decoration': 'underline', 'textAlign': 'left'}),
 					# html.Br(),
-					html.Div(str(round(text, 2)), style={'color': DARK_ACCENT, 'textAlign': 'left'}),
+					html.Div(str(round(text, 2)), style={'color': DARK_ACCENT, 'textAlign': 'center'}),
 					# str(round(text, 2))
 				], style={'color': DARK_ACCENT}) 
 			])

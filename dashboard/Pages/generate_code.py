@@ -51,15 +51,15 @@ def make_layout():
 								html.Div([
 									html.Div('Strategy Name:', className='four columns'),
 									#dcc.Dropdown(id='strategy', options=[], className='eight columns u-pull-right')
-									dcc.Input(id='filename', className='eight columns u-pull-right', value = "MyStrategy", style={'margin-left': '10px', 'width': '150px', 'font-size': '15px', 'font-weight': '5', 'border-radius': 5})
-								], className='row mb-8'),
+									dcc.Input(id='filename', className='eight columns u-pull-right', value = "MyStrategy", style={'margin-left': '10px', 'width': '350px', 'font-size': '15px', 'font-weight': '5', 'border-radius': 5})
+								], className='row mb-10'),
 
 								html.Br(),
 
 								html.Div([
 									html.Div('Capital:', className='four columns'),
 									#dcc.Dropdown(id='strategy', options=[], className='eight columns u-pull-right')
-									dcc.Input(id='cash', className='eight columns u-pull-right', value = 10000, style={'margin-left': '10px', 'width': '150px', 'font-size': '15px', 'font-weight': '5', 'border-radius': 5})
+									dcc.Input(id='cash', className='eight columns u-pull-right', value = 10000, style={'margin-left': '10px', 'width': '350px', 'font-size': '15px', 'font-weight': '5', 'border-radius': 5})
 								], className='row mb-10'),
 								html.Br(),
 
